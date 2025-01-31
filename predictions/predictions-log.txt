@@ -1,0 +1,82 @@
+01/31/2025 - 
+	Based on this row of values:
+          Price         Close_prev          High_prev           Low_prev Open_prev Volume_prev
+2025-01-31  601.8200073242188  609.9600219726562  601.0499877929688     607.5    66353260
+
+ My model predicts that the value of 'SPY' will be '601.5428466796875' on '2025-01-31'
+
+That's a difference of:
+
+$-0.27716064453125
+
+01/31/2025 - 
+	Based on this row of values:
+
+           Price Close_prev           High_prev            Low_prev          Open_prev Volume_prev
+2025-01-31      236.0  247.19000244140625  233.44000244140625  247.0399932861328    93080144
+
+ My model predicts that the value of 'AAPL' will be '239.58313659667968' on '2025-01-31'
+
+That's a difference of:
+
+$3.5831365966796795
+
+01/31/2025 - 
+	Based on this row of values:
+
+          Price         Close_prev         High_prev           Low_prev          Open_prev Volume_prev
+2025-01-31  522.2899780273438  531.517822265625  521.1900024414062  526.9199829101562    38362346
+
+ My model predicts that the value of 'QQQ' will be '522.2405221557617' on '2025-01-31'
+
+That's a difference of:
+
+$-0.049455871582040345
+
+01/31/2025 - 
+	Based on this row of values:
+
+          Price          Close_prev           High_prev           Low_prev          Open_prev Volume_prev
+2025-01-31  415.05999755859375  420.67999267578125  414.9100036621094  418.7300109863281    33325644
+
+ My model predicts that the value of 'MSFT' will be '415.12090576171875' on '2025-01-31'
+
+That's a difference of:
+
+$0.06090820312499545
+
+01/31/2025 - 
+	Based on this row of values:
+
+          Price          Close_prev          High_prev            Low_prev           Open_prev Volume_prev
+2025-01-31  237.67999267578125  240.2899932861328  236.46499633789062  236.59500122070312    36067346
+
+ My model predicts that the value of 'AMZN' will be '234.60100296020508' on '2025-01-31'
+
+That's a difference of:
+
+$-3.0789897155761707
+
+01/31/2025 - 
+	Based on this row of values:
+
+        Price         Close_prev           High_prev          Low_prev          Open_prev Volume_prev
+2025-01-31  19.43000030517578  20.329999923706055  19.3799991607666  20.09000015258789   116226394
+
+ My model predicts that the value of 'INTC' will be '19.420024375915528' on '2025-01-31'
+
+That's a difference of:
+
+$-0.00997592926025348
+
+01/31/2025 - 
+	Based on this row of values:
+
+    Price         Close_prev          High_prev           Low_prev           Open_prev Volume_prev
+2025-01-31  42.36000061035156  42.56999969482422  42.32899856567383  42.540000915527344      556570
+
+ My model predicts that the value of 'XYLD' will be '42.433369674682616' on '2025-01-31'
+
+That's a difference of:
+
+$0.07336906433105383
