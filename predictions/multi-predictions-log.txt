@@ -1,47 +1,54 @@
-FOR TICKER 'SPY', 
-	The predicted volume range is:37415755.0 - 58906647.0
-	Low price is: 601.4463698795815. 
-High price is: 607.1356580622481.
-	Close price range for next trading day on 'SPY' is: 597.2464819335937 - 602.7909246826172
-
-PREV CLOSE: 601.82
-
 FOR TICKER 'AMZN', 
-	The predicted volume range is:33010740.0 - 42308234.0
-	Low price is: 232.23610214233398. 
-High price is: 239.55469772338867.
-	Close price range for next trading day on 'AMZN' is: 236.27179580688477 - 236.91999771118165
+	The predicted volume range is:33839142.84 - 38713961.64
+	Low price is: 233.6961961364746. 
+High price is: 239.014627532959.
+	Close price range for next trading day on 'AMZN' is: 236.63349838256835 - 237.0205986022949
 
-    PREV CLOSE: 237.68
+------------------------
 
+FOR TICKER 'AAPL', 
+	The predicted volume range is:42936541.0 - 66875135.4
+	Low price is: 230.54030331609033. 
+High price is: 234.1856104773604.
+	Close price range for next trading day on 'AAPL' is: 232.0934033203125 - 232.71016189575195
+
+------------------------
 FOR TICKER 'INTC', 
-	The predicted volume range is:54975724.0 - 105112034.0
-	Low price is: 19.474176185386458. 
-High price is: 20.302901472892835.
-	Close price range for next trading day on 'INTC' is: 19.600235843658446 - 19.637050914764405
+	The predicted volume range is:66961372.0 - 81053803.72
+	Low price is: 18.915543996730364. 
+High price is: 19.905679883354907.
+	Close price range for next trading day on 'INTC' is: 19.464451637268066 - 19.565571594238282
+FOR TICKER 'MSFT', 
+	The predicted volume range is:22813249.93 - 24430842.72
+	Low price is: 410.31442426826766. 
+High price is: 417.2750116233775.
+	Close price range for next trading day on 'MSFT' is: 414.0667666625977 - 414.17857818603517
 
-    PREV CLOSE: 19.43
 
-FOR TICKER 'QQQ', 
-	The predicted volume range is:26021782.0 - 36404624.0
-	Low price is: 522.0724755424885. 
-High price is: 527.465254371932.
-	Close price range for next trading day on 'QQQ' is: 519.0889953613281 - 523.4901800537109
+------------------------
 
-    PREV CLOSE: 522.29
 
 FOR TICKER 'SH', 
-	The predicted volume range is:6209780.0 - 6617702.0
-	Low price is: 41.12074523542307. 
-High price is: 41.52552908996263.
-	Close price range for next trading day on 'SH' is: 41.48539493560791 - 41.50193134307861
+	The predicted volume range is:3459936.0 - 7649562.35
+	Low price is: 41.31631255139067. 
+High price is: 41.81010573912516.
+------------------------
 
-    PREV CLOSE: 41.49
 
+	Close price range for next trading day on 'SH' is: 41.440794982910155 - 41.54175273895264
 FOR TICKER 'TEAM', 
-	The predicted volume range is:1248124.0 - 5907416.0
-	Low price is: 281.7778025817871. 
-High price is: 308.56702697753906.
-	Close price range for next trading day on 'TEAM' is: 281.7210986328125 - 287.6901991271973
+	The predicted volume range is:2051231.0 - 2838864.84
+	Low price is: 296.5774490356445. 
+High price is: 316.30532501220705.
+------------------------
 
-    PREV CLOSE: 306.78
+
+	Close price range for next trading day on 'TEAM' is: 306.0170037841797 - 307.8886044311523
+FOR TICKER 'XYLD', 
+	The predicted volume range is:542814.52 - 606373.68
+	Low price is: 42.005255123130716. 
+High price is: 42.34600074768066.
+------------------------
+
+
+	Close price range for next trading day on 'XYLD' is: 42.309388885498045 - 42.32691898345947
