@@ -1,0 +1,46 @@
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'AAPL'
+
+		The predicted volume range is: 46646989.6 - 51675877.0
+		Predicted Low point for the day is: 226.0828688684404
+		Predicted High point for the day is: 231.36228725609496
+Close price range for next trading day on 'AAPL' is: 229.10533981323243 - 229.19619735717774
+
+
+
+
+Last close was: 232.8000030517578
+This means the model predicts a difference of -3.6946632385253793 - -3.6038056945800747
+
+And a percentage change of -1.5870546349193795% - -1.548026480815316%
+
+
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'AMZN'
+
+		The predicted volume range is: 28785314.8 - 34020326.08
+		Predicted Low point for the day is: 233.80119430541993
+		Predicted High point for the day is: 240.08590118408202
+Close price range for next trading day on 'AMZN' is: 237.97809967041016 - 238.6921990966797
+
+
+
+
+Last close was: 242.05999755859372
+This means the model predicts a difference of -4.081897888183562 - -3.3677984619140204
+
+And a percentage change of -1.6863165865295386% - -1.3913073187976057%
+
+
+
+-------------------------------------------------------------------------------
+

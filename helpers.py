@@ -143,7 +143,7 @@ def get_last_close_price(ticker):
     #To counteract this, check that the final 'Price' does NOT equal today's date
     now = datetime.now()
     current_day = now.strftime("%Y-%m-%d")
-    last_index = 2 if current_day == df.loc[len(df)-1]['Price'] or now.hour < 16 else 1 # market closes at 4 (the 16th hour of the day) don't use today's info until after market close
+    last_index = 1 if current_day == df.loc[len(df)-1]['Price'] or now.hour < 16 else 0 # market closes at 4 (the 16th hour of the day) don't use today's info until after market close
 
     print(f"{last_index} <<< if 2, we're looking at yesterday, if 1 we're looking at today")
 
@@ -209,9 +209,9 @@ def get_model_ready_dataframe(ticker):
     
     now = datetime.now()
     current_day = now.strftime("%Y-%m-%d")
-    last_index = 2 if current_day == data_rows_only.loc[len(data_rows_only)-1]['Price'] and now.hour < 16 else 1 # market closes at 4 (the 16th hour of the day) don't use today's info until after market close
+    last_index = 1 if current_day == data_rows_only.loc[len(data_rows_only)-1]['Price'] and now.hour < 16 else 0 # market closes at 4 (the 16th hour of the day) don't use today's info until after market close
 
-    if last_index == 2:
+    if last_index == 1:
         print("We're using yesterday's data")
     else:
         print("Market closed already, take current day's data.")
