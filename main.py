@@ -1,3 +1,4 @@
+from datetime import datetime
 import helpers
 
 tickers = [
@@ -13,4 +14,4 @@ tickers = [
 ]
 
 for ticker in tickers:
-    helpers.train_model(ticker, 10)
+    helpers.train_model(ticker, 10, "predictions_for_2_5_2025")

@@ -13,8 +13,7 @@ from sklearn.model_selection import train_test_split
 from datetime import datetime
 
 ### model training ###
-def train_model(ticker, loops):
-    print("locaation 1")
+def train_model(ticker, loops, file_predict_name):
     df_combined = get_model_ready_dataframe(ticker)
 
     # build stock model and feature sets
@@ -33,7 +32,6 @@ def train_model(ticker, loops):
     stock_features_4 = ['Close_prev', 'High_prev', 'Low_prev', 'Open_prev', 'Volume_prev']
     ### TARGET =  CLOSE  ###
 
-    print("locaation 2")
     recent_closed = df_combined.iloc[len(df_combined)-1]
 
     # establish X (rows to analyze) and y (value to predict) variables
@@ -51,13 +49,13 @@ def train_model(ticker, loops):
     y4 = df_combined.iloc[1:]['Current Close']
 
     # global scope variables for data extraction
-    print("locaation 3")
     prediction_array = []
 
     # let's start the 1000 random prediction loops here:
     # (this is not "training" the model, we are merely producing a sample of data to derive our educated guesses from)
-    print("locaation 4")
+    print("Start training model...")
     for i in range(loops):
+        print(f"Started loop {i} of {loops}")
         # split the training set on each loop
         train_X1, val_X1, train_y1, val_y1 = train_test_split(X1, y1)
 
@@ -67,6 +65,8 @@ def train_model(ticker, loops):
 
         prediction_1 = stock_model_1.predict([recent_closed_X1])
         prediction_array.append(prediction_1[0]) # make a prediction and push it to the array
+
+    print(f"End training loops for {ticker}")
 
     prediction_array = mean_within_one_std(prediction_array)
 
@@ -102,7 +102,7 @@ def train_model(ticker, loops):
 
     low_close, high_close = get_min_max(prediction_4, prediction_5)
 
-    multi_model_prediction_logger(ticker, low_volume, high_volume, low_price, high_price, low_close, high_close)
+    multi_model_prediction_logger(ticker, low_volume, high_volume, low_price, high_price, low_close, high_close, file_predict_name)
 
 
 ### Load CSV data helpers ###
@@ -141,8 +141,11 @@ def get_last_close_price(ticker):
     # it is real-time CSV files 
 
     #To counteract this, check that the final 'Price' does NOT equal today's date
-    current_day = datetime.now().strftime("%Y-%m-%d")
-    last_index = 2 if current_day == df.loc[len(df)-1]['Price'] else 1
+    now = datetime.now()
+    current_day = now.strftime("%Y-%m-%d")
+    last_index = 2 if current_day == df.loc[len(df)-1]['Price'] or now.hour < 16 else 1 # market closes at 4 (the 16th hour of the day) don't use today's info until after market close
+
+    print(f"{last_index} <<< if 2, we're looking at yesterday, if 1 we're looking at today")
 
     return pd.to_numeric(df.loc[len(df)-last_index]['Close'], errors='coerce')
 
@@ -180,25 +183,40 @@ def add_lines_to_file(file_path, new_lines_arr):
         add_line_to_file(file_path, new_line)
 
 def multi_model_prediction_logger(ticker, low_volume, high_volume, low_price, 
-                                  high_price, low_close, high_close):
+                                  high_price, low_close, high_close, file_name):
     
+    last_close = get_last_close_price(ticker)
+
     arr = [ 
         "-------------------------------------------------------------------------------\n",
         f"FOR TICKER \n\n\t'{ticker}'\n",
         f"\t\tThe predicted volume range is: {low_volume} - {high_volume}",
         f"\t\tPredicted Low point for the day is: {low_price}",
         f"\t\tPredicted High point for the day is: {high_price}",
-        f"Close price range for next trading day on '{ticker}' is: {low_close} - {high_close}"
+        f"Close price range for next trading day on '{ticker}' is: {low_close} - {high_close}\n",
+        "\n\n",
+        f"Last close was: {last_close}",
+        f"This means the model predicts a difference of {low_close - last_close} - {high_close - last_close}\n",
+        f"And a percentage change of {get_percent_error(ticker, low_close)} - {get_percent_error(ticker, high_close)}\n",
         "\n\n-------------------------------------------------------------------------------\n"
     ]
 
-    add_lines_to_file("some_file.txt", arr)
+    add_lines_to_file(f"{file_name}.txt", arr)
 
 def get_model_ready_dataframe(ticker):
-    print('before load_data(ticker).iloc[2:]')
     # get only data rows by 
-    data_rows_only = load_data(ticker).iloc[2:]
-    print('after load_data(ticker).iloc[2:]')
+    data_rows_only = load_data(ticker)
+    
+    now = datetime.now()
+    current_day = now.strftime("%Y-%m-%d")
+    last_index = 2 if current_day == data_rows_only.loc[len(data_rows_only)-1]['Price'] and now.hour < 16 else 1 # market closes at 4 (the 16th hour of the day) don't use today's info until after market close
+
+    if last_index == 2:
+        print("We're using yesterday's data")
+    else:
+        print("Market closed already, take current day's data.")
+    
+    data_rows_only = data_rows_only.iloc[2:len(data_rows_only)-last_index]
 
     #shift data, concat() columns, and rename for analyzing data
     df_shifted = data_rows_only.shift(1)

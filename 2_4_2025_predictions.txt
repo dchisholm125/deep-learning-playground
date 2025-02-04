@@ -1,0 +1,323 @@
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'AAPL'
+
+		The predicted volume range is: 46990907.04 - 48391752.76
+		Predicted Low point for the day is: 226.41057967452852
+		Predicted High point for the day is: 231.44817437715244
+Close price range for next trading day on 'AAPL' is: 229.08049621582032 - 229.1961262512207
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'AMZN'
+
+		The predicted volume range is: 30363054.38 - 31552881.0
+		Predicted Low point for the day is: 234.9730940246582
+		Predicted High point for the day is: 239.9597006225586
+Close price range for next trading day on 'AMZN' is: 238.5025991821289 - 238.77239913940429
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'INTC'
+
+		The predicted volume range is: 49110496.2 - 59255612.0
+		Predicted Low point for the day is: 18.993735253757098
+		Predicted High point for the day is: 19.522196238117946
+Close price range for next trading day on 'INTC' is: 19.142334022521972 - 19.187685661315918
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'MSFT'
+
+		The predicted volume range is: 19884006.52 - 20432175.0
+		Predicted Low point for the day is: 410.05138936986776
+		Predicted High point for the day is: 415.58960746068567
+Close price range for next trading day on 'MSFT' is: 411.61180206298826 - 411.7822134399414
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'QQQ'
+
+		The predicted volume range is: 26214204.5 - 29066249.7
+		Predicted Low point for the day is: 520.451345179708
+		Predicted High point for the day is: 525.5533991342355
+Close price range for next trading day on 'QQQ' is: 524.4395147705078 - 525.0062060546875
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'SH'
+
+		The predicted volume range is: 4073882.87 - 4284568.8
+		Predicted Low point for the day is: 41.57895962173819
+		Predicted High point for the day is: 42.117362602643205
+Close price range for next trading day on 'SH' is: 41.77467029571533 - 41.79646793365478
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'SPY'
+
+		The predicted volume range is: 36481588.28 - 46418958.0
+		Predicted Low point for the day is: 596.3599524273407
+		Predicted High point for the day is: 600.8592598864095
+Close price range for next trading day on 'SPY' is: 600.643671875 - 601.3561004638672
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'TEAM'
+
+		The predicted volume range is: 1834000.0 - 1924170.4
+		Predicted Low point for the day is: 304.68590393066404
+		Predicted High point for the day is: 319.1219076538086
+Close price range for next trading day on 'TEAM' is: 310.1070004272461 - 313.5569989013672
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'XYLD'
+
+		The predicted volume range is: 626738.1 - 695744.81
+		Predicted Low point for the day is: 42.162672499337475
+		Predicted High point for the day is: 42.40577217906562
+Close price range for next trading day on 'XYLD' is: 42.40421985626221 - 42.404819831848144
+
+-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'AAPL'
+
+		The predicted volume range is: 47350758.2 - 53174448.0
+		Predicted Low point for the day is: 226.05714290100215
+		Predicted High point for the day is: 231.23845797237186
+Close price range for next trading day on 'AAPL' is: 228.46058013916016 - 228.9104083251953
+
+
+
+
+Last close was: 228.00999450683597
+This means the model predicts a difference of 0.45058563232419147 - 0.9004138183593398
+
+And a percentage change of 0.19761661470093253% - 0.3949010306793128%
+
+
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'AMZN'
+
+		The predicted volume range is: 29616760.59 - 31767178.52
+		Predicted Low point for the day is: 234.9905940246582
+		Predicted High point for the day is: 239.9597006225586
+Close price range for next trading day on 'AMZN' is: 238.5025991821289 - 238.77239913940429
+
+
+
+
+Last close was: 237.4199981689453
+This means the model predicts a difference of 1.0826010131835915 - 1.352400970458973
+
+And a percentage change of 0.45598560421739415% - 0.569623865255285%
+
+
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'INTC'
+
+		The predicted volume range is: 50006488.15 - 51305497.0
+		Predicted Low point for the day is: 18.89445987203584
+		Predicted High point for the day is: 19.479090042195583
+Close price range for next trading day on 'INTC' is: 18.99236400604248 - 18.993085079193115
+
+
+
+
+Last close was: 19.3799991607666
+This means the model predicts a difference of -0.3876351547241228 - -0.3869140815734866
+
+And a percentage change of -2.0001814835413514% - -1.9964607756886081%
+
+
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'MSFT'
+
+		The predicted volume range is: 20042701.7 - 20560259.64
+		Predicted Low point for the day is: 410.010301872209
+		Predicted High point for the day is: 415.51338134775136
+Close price range for next trading day on 'MSFT' is: 411.08151641845706 - 411.49328979492185
+
+
+
+
+Last close was: 410.9200134277344
+This means the model predicts a difference of 0.16150299072268126 - 0.573276367187475
+
+And a percentage change of 0.03930278045488375% - 0.1395104517800015%
+
+
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'QQQ'
+
+		The predicted volume range is: 25981533.98 - 27882782.92
+		Predicted Low point for the day is: 520.5271075468361
+		Predicted High point for the day is: 525.3546230676684
+Close price range for next trading day on 'QQQ' is: 524.4396435546874 - 524.4488372802734
+
+
+
+
+Last close was: 518.1099853515625
+This means the model predicts a difference of 6.32965820312495 - 6.3388519287109375
+
+And a percentage change of 1.2216823419896015% - 1.223456815720261%
+
+
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'SH'
+
+		The predicted volume range is: 4077126.97 - 4246400.25
+		Predicted Low point for the day is: 41.57895962173819
+		Predicted High point for the day is: 42.117362602643205
+Close price range for next trading day on 'SH' is: 41.77467029571533 - 41.79646793365478
+
+
+
+
+Last close was: 41.77999877929688
+This means the model predicts a difference of -0.005328483581550358 - 0.01646915435789964
+
+And a percentage change of -0.012753670984286305% - 0.03941875260671513%
+
+
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'SPY'
+
+		The predicted volume range is: 36642335.88 - 39599765.72
+		Predicted Low point for the day is: 596.4191817463158
+		Predicted High point for the day is: 600.771152231576
+Close price range for next trading day on 'SPY' is: 600.3979229736328 - 601.2062335205078
+
+
+
+
+Last close was: 597.77001953125
+This means the model predicts a difference of 2.6279034423828307 - 3.4362139892577943
+
+And a percentage change of 0.4396178055974669% - 0.5748387970263801%
+
+
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'TEAM'
+
+		The predicted volume range is: 1789069.8 - 1932073.4
+		Predicted Low point for the day is: 304.73640380859376
+		Predicted High point for the day is: 319.1219076538086
+Close price range for next trading day on 'TEAM' is: 310.1070004272461 - 313.49149810791016
+
+
+
+
+Last close was: 311.3999938964844
+This means the model predicts a difference of -1.2929934692382972 - 2.091504211425786
+
+And a percentage change of -0.4152194908738869% - 0.6716455531213157%
+
+
+
+-------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+
+FOR TICKER 
+
+	'XYLD'
+
+		The predicted volume range is: 630314.38 - 711908.94
+		Predicted Low point for the day is: 42.174962895395964
+		Predicted High point for the day is: 42.40537216991035
+Close price range for next trading day on 'XYLD' is: 42.39185417175293 - 42.396154174804686
+
+
+
+
+Last close was: 42.16999816894531
+This means the model predicts a difference of 0.22185600280761975 - 0.226156005859373
+
+And a percentage change of 0.526099152100505% - 0.5362959821656289%
+
+
+
+-------------------------------------------------------------------------------
+
