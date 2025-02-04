@@ -43,8 +43,21 @@ def get_last_close_price(ticker):
     #load data into a DataFrame
     df = pd.read_csv(f'./csv/{ticker}_data.csv')
 
-    return df.loc[len(df)-1]['Close']
+    # be very careful when loading data.
+    # if the data is loaded while the market is OPEN, the last row is not yesterday's information, but today's
+    # it is real-time CSV files 
 
-print(get_last_close_price('SPY'))
+    #To counteract this, check that the final 'Price' does NOT equal today's date
+    current_day = datetime.now().strftime("%Y-%m-%d")
+    last_index = 2 if current_day == df.loc[len(df)-1]['Price'] else 1
+
+    return pd.to_numeric(df.loc[len(df)-last_index]['Close'], errors='coerce')
+
+def get_price_error(ticker, actual_close):
+    return actual_close - get_last_close_price(ticker)
+
+def get_percent_error(ticker, actual_close):
+    return f"{get_price_error(ticker, actual_close) / get_last_close_price(ticker) * 100}%"
 
 # load_csv_files()
+print(get_price_error('SPY', 601.8))
