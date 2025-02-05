@@ -24,8 +24,11 @@ class MultiModelPrediction:
         self.max_close_predict = max_close_predict
 
 ### model training ###
-def train_model(ticker, loops):
-    df_combined = get_model_ready_dataframe(ticker)
+def train_model(ticker, loops, csv_file_path = None):
+    df_combined = get_model_ready_dataframe(ticker, csv_file_path)
+
+    print(f"From train_model() => using csv_file_path = {csv_file_path}")
+    print(df_combined)
 
     # build stock model and feature sets
     stock_model_1 = RandomForestRegressor(random_state=1)
@@ -81,7 +84,7 @@ def train_model(ticker, loops):
     print(f"End training loops for {ticker}")
 
     # remove outliers, and keep data to within one standard deviation
-    volume_predict_arr = mean_within_one_std(volume_predict_arr)
+    ### removed it , maybe put it back?!?!   # volume_predict_arr = mean_within_one_std(volume_predict_arr)
 
     # at this point, we can make 'X' predictions and do the same with low, high, and closing prices!
     # let's collect predictions for all elements in the volume_predict_arr
@@ -91,9 +94,9 @@ def train_model(ticker, loops):
     close_predict_arr = []
 
     # fit last three models on WHOLE data set
-    stock_model_2.fit(X2,y2) # Low model
-    stock_model_3.fit(X3,y3) # high model
-    stock_model_4.fit(X4,y4) # close model
+    trained_model_2 = stock_model_2.fit(X2,y2) # Low model
+    trained_model_3 = stock_model_3.fit(X3,y3) # high model
+    trained_model_4 = stock_model_4.fit(X4,y4) # close model
 
 
     for volume_entry in volume_predict_arr:
@@ -115,10 +118,13 @@ def train_model(ticker, loops):
 
         close_predict_arr.append(close_predict)
 
-    # return the results as an object: the trained model!!        
+    # return the results as an object: the trained model!! 
+    model = MultiModelPrediction(min(volume_predict_arr), max(volume_predict_arr), min(low_price_arr), np.mean(low_price_arr), 
+                                  np.mean(high_price_arr), max(high_price_arr), min(close_predict_arr), max(close_predict_arr))       
 
-    return MultiModelPrediction(min(volume_predict_arr), max(volume_predict_arr), min(low_price_arr), np.mean(low_price_arr), 
-                                  np.mean(high_price_arr), max(high_price_arr), min(close_predict_arr), max(close_predict_arr))
+    print(f"From train_model() => model = {model}")
+
+    return model
 
 
 ### Load CSV data helpers ###
@@ -132,16 +138,22 @@ def load_csv_files(tickers):
 
         print(f"Loading historical data for '{ticker}' as of {timestamp}")
 
-def load_data(ticker):
-    unsafe_session = requests.session()
-    unsafe_session.verify = False
+def load_data(ticker, csv_file_path = None):
+    
+    # if we're designating a csv, no need to initiate downloads
+    if csv_file_path != None:
+        return pd.read_csv(csv_file_path)
+    else:
 
-    yf.download(tickers=ticker
-                , session=unsafe_session
-                ).to_csv(f'./csv/{ticker}_data.csv')
+        unsafe_session = requests.session()
+        unsafe_session.verify = False
 
-    # load data into DataFrame
-    return pd.read_csv(f'./csv/{ticker}_data.csv')
+        yf.download(tickers=ticker
+                    , session=unsafe_session
+                    ).to_csv(f'./csv/{ticker}_data.csv')
+
+        # load data into DataFrame
+        return pd.read_csv(f'./csv/{ticker}_data.csv')
 
 
 ### Model accuracy helpers ###
@@ -155,18 +167,21 @@ def last_index_by_time():
     now = datetime.now()
     return 2 if 9 <= ((now.hour + now.minute) / 100) <= 16 else 1
 
-def get_last_training_row(ticker):
+def get_last_training_row(ticker, csv_file = None):
     # load data into a DataFrame
-    df = pd.read_csv(f'./csv/{ticker}_data.csv')
+    read_csv_file = csv_file if csv_file != None else f"./csv/{ticker}_data.csv"
+
+    print(f"read_csv_file = '{read_csv_file}'")
+    df = pd.read_csv(read_csv_file)
 
     # grab index_offset based on time of program running
     index_offset = last_index_by_time()
 
     return df.loc[len(df)-index_offset]
 
-def get_last_close_price(ticker):
+def get_last_close_price(ticker, csv_file = None):
     # needs to be converted to_numeric
-    return pd.to_numeric(get_last_training_row(ticker)['Close'], errors='coerce')
+    return pd.to_numeric(get_last_training_row(ticker, csv_file)['Close'], errors='coerce')
 
 def get_price_error(ticker, actual_close):
     return actual_close - get_last_close_price(ticker)
@@ -194,7 +209,7 @@ def mean_within_one_std(arr):
 def add_line_to_file(file_path, new_line):
 
     with open(file_path, "a") as file:
-        file.write(new_line + "\n")
+        file.write(f"{new_line}\n")
 
 def add_lines_to_file(file_path, new_lines_arr):
 
@@ -227,9 +242,9 @@ def multi_model_prediction_logger(ticker, loops, multi_model_obj, file_name):
 
     add_lines_to_file(f"{file_name}.txt", arr)
 
-def get_model_ready_dataframe(ticker):
+def get_model_ready_dataframe(ticker, csv_file_path = None):
     # get only data rows by 
-    data_rows_only = load_data(ticker)
+    data_rows_only = load_data(ticker, csv_file_path)
     
     now = datetime.now()
     current_day = now.strftime("%Y-%m-%d")
