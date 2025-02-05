@@ -12,8 +12,19 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from datetime import datetime
 
+class MultiModelPrediction:
+    def __init__(self, min_vol_predict, max_vol_predict, min_low_price, avg_low_price, avg_high_price, max_high_price, min_close_predict, max_close_predict):
+        self.min_vol_predict = min_vol_predict
+        self.max_vol_predict = max_vol_predict
+        self.min_low_price = min_low_price
+        self.avg_low_price = avg_low_price
+        self.avg_high_price = avg_high_price
+        self.max_high_price = max_high_price
+        self.min_close_predict = min_close_predict
+        self.max_close_predict = max_close_predict
+
 ### model training ###
-def train_model(ticker, loops, file_predict_name):
+def train_model(ticker, loops):
     df_combined = get_model_ready_dataframe(ticker)
 
     # build stock model and feature sets
@@ -32,7 +43,8 @@ def train_model(ticker, loops, file_predict_name):
     stock_features_4 = ['Close_prev', 'High_prev', 'Low_prev', 'Open_prev', 'Volume_prev']
     ### TARGET =  CLOSE  ###
 
-    recent_closed = df_combined.iloc[len(df_combined)-1]
+    index_offset = last_index_by_time()
+    recent_closed = df_combined.iloc[len(df_combined)-index_offset]
 
     # establish X (rows to analyze) and y (value to predict) variables
     X1 = df_combined.iloc[1:][stock_features_1]
@@ -48,8 +60,8 @@ def train_model(ticker, loops, file_predict_name):
     X4 = df_combined.iloc[1:][stock_features_4]
     y4 = df_combined.iloc[1:]['Current Close']
 
-    # global scope variables for data extraction
-    prediction_array = []
+    # start with blank array to insert volume predictions
+    volume_predict_arr = []
 
     # let's start the 1000 random prediction loops here:
     # (this is not "training" the model, we are merely producing a sample of data to derive our educated guesses from)
@@ -64,45 +76,49 @@ def train_model(ticker, loops, file_predict_name):
         stock_model_1.fit(train_X1,train_y1)
 
         prediction_1 = stock_model_1.predict([recent_closed_X1])
-        prediction_array.append(prediction_1[0]) # make a prediction and push it to the array
+        volume_predict_arr.append(prediction_1[0]) # make a prediction and push it to the array
 
     print(f"End training loops for {ticker}")
 
-    prediction_array = mean_within_one_std(prediction_array)
+    # remove outliers, and keep data to within one standard deviation
+    volume_predict_arr = mean_within_one_std(volume_predict_arr)
 
-    low_volume = np.min(prediction_array).astype(np.float64)
-    high_volume = np.max(prediction_array).astype(np.float64)
+    # at this point, we can make 'X' predictions and do the same with low, high, and closing prices!
+    # let's collect predictions for all elements in the volume_predict_arr
+
+    low_price_arr = []
+    high_price_arr = []
+    close_predict_arr = []
 
     # fit last three models on WHOLE data set
     stock_model_2.fit(X2,y2) # Low model
     stock_model_3.fit(X3,y3) # high model
     stock_model_4.fit(X4,y4) # close model
 
-    print("locaation 5")
-    
-    df_2 = pd.DataFrame({'Close_prev': [recent_closed["Close_prev"]], 'Open_prev': [recent_closed["Open_prev"]], 'Volume_prev': [low_volume], })
-    df_3 = pd.DataFrame({'Close_prev': [recent_closed["Close_prev"]], 'Open_prev': [recent_closed["Open_prev"]], 'Volume_prev': [high_volume], })
 
-    # make two predictions for the HIGH and LOW volume
-    low_price = stock_model_2.predict(df_2)[0]
-    high_price = stock_model_3.predict(df_3)[0]
+    for volume_entry in volume_predict_arr:
+        # format to DataFrame that stock models 2 & 3 expect
+        low_high_df = pd.DataFrame({'Close_prev': [recent_closed["Close_prev"]], 'Open_prev': [recent_closed["Open_prev"]], 'Volume_prev': [volume_entry], })
 
-    now = datetime.now()
-    timestamp = now.strftime("%H:%M %m/%d/%Y")
+        # make low and high predictions
+        low_predict = stock_model_2.predict(low_high_df)[0]
+        high_predict = stock_model_3.predict(low_high_df)[0]
 
-    # Now let's make the very LAST prediction based on this new information!
-    df_4 = pd.DataFrame({'Close_prev': [recent_closed["Close_prev"]], 'High_prev': [high_price], 'Low_prev': [low_price], 
-                        'Open_prev': [recent_closed["Open_prev"]], 'Volume_prev': [low_volume], })
+        low_price_arr.append(low_predict)
+        high_price_arr.append(high_predict)
 
-    df_5 = pd.DataFrame({'Close_prev': [recent_closed["Close_prev"]], 'High_prev': [high_price], 'Low_prev': [low_price], 
-                        'Open_prev': [recent_closed["Open_prev"]], 'Volume_prev': [high_volume], })
+        # now we can make closing price predictions
+        close_predict_df = pd.DataFrame({'Close_prev': [recent_closed["Close_prev"]], 'High_prev': [high_predict], 'Low_prev': [low_predict], 
+                        'Open_prev': [recent_closed["Open_prev"]], 'Volume_prev': [volume_entry], })
+        
+        close_predict = stock_model_4.predict(close_predict_df)[0]
 
-    prediction_4 = stock_model_4.predict(df_4)[0]
-    prediction_5 = stock_model_4.predict(df_5)[0]
+        close_predict_arr.append(close_predict)
 
-    low_close, high_close = get_min_max(prediction_4, prediction_5)
+    # return the results as an object: the trained model!!        
 
-    multi_model_prediction_logger(ticker, low_volume, high_volume, low_price, high_price, low_close, high_close, file_predict_name)
+    return MultiModelPrediction(min(volume_predict_arr), max(volume_predict_arr), min(low_price_arr), np.mean(low_price_arr), 
+                                  np.mean(high_price_arr), max(high_price_arr), min(close_predict_arr), max(close_predict_arr))
 
 
 ### Load CSV data helpers ###
@@ -130,24 +146,27 @@ def load_data(ticker):
 
 ### Model accuracy helpers ###
 
-def get_last_close_price(ticker):
-    # last close price will ALWAYS be the final line of the CSV
+def last_index_by_time():
+    # get the data row that corresponds with most recent closed price
+    # At or before 8:59am, use last line
+    # Between 9:00am and 4:00pm, use second to last line
+    # At or later than 4:01pm on a market day, use last line
 
-    #load data into a DataFrame
+    now = datetime.now()
+    return 2 if 9 <= ((now.hour + now.minute) / 100) <= 16 else 1
+
+def get_last_training_row(ticker):
+    # load data into a DataFrame
     df = pd.read_csv(f'./csv/{ticker}_data.csv')
 
-    # be very careful when loading data.
-    # if the data is loaded while the market is OPEN, the last row is not yesterday's information, but today's
-    # it is real-time CSV files 
+    # grab index_offset based on time of program running
+    index_offset = last_index_by_time()
 
-    #To counteract this, check that the final 'Price' does NOT equal today's date
-    now = datetime.now()
-    current_day = now.strftime("%Y-%m-%d")
-    last_index = 1 if current_day == df.loc[len(df)-1]['Price'] or now.hour < 16 else 0 # market closes at 4 (the 16th hour of the day) don't use today's info until after market close
+    return df.loc[len(df)-index_offset]
 
-    print(f"{last_index} <<< if 2, we're looking at yesterday, if 1 we're looking at today")
-
-    return pd.to_numeric(df.loc[len(df)-last_index]['Close'], errors='coerce')
+def get_last_close_price(ticker):
+    # needs to be converted to_numeric
+    return pd.to_numeric(get_last_training_row(ticker)['Close'], errors='coerce')
 
 def get_price_error(ticker, actual_close):
     return actual_close - get_last_close_price(ticker)
@@ -182,22 +201,27 @@ def add_lines_to_file(file_path, new_lines_arr):
     for new_line in new_lines_arr:
         add_line_to_file(file_path, new_line)
 
-def multi_model_prediction_logger(ticker, low_volume, high_volume, low_price, 
-                                  high_price, low_close, high_close, file_name):
+def multi_model_prediction_logger(ticker, loops, multi_model_obj, file_name):
+
+    now = datetime.now()
+    timestamp = now.strftime("%H:%M %m/%d/%Y")
     
     last_close = get_last_close_price(ticker)
 
     arr = [ 
         "-------------------------------------------------------------------------------\n",
-        f"FOR TICKER \n\n\t'{ticker}'\n",
-        f"\t\tThe predicted volume range is: {low_volume} - {high_volume}",
-        f"\t\tPredicted Low point for the day is: {low_price}",
-        f"\t\tPredicted High point for the day is: {high_price}",
-        f"Close price range for next trading day on '{ticker}' is: {low_close} - {high_close}\n",
-        "\n\n",
-        f"Last close was: {last_close}",
-        f"This means the model predicts a difference of {low_close - last_close} - {high_close - last_close}\n",
-        f"And a percentage change of {get_percent_error(ticker, low_close)} - {get_percent_error(ticker, high_close)}\n",
+        f"FOR TICKER \n\n\t'{ticker}'\n\n",
+        f"Prediction generated at: {timestamp}\n\n"
+        f"\t\tThe predicted volume range is: {multi_model_obj.min_vol_predict} - {multi_model_obj.max_vol_predict}",
+        f"\t\tMin Predicted Low point for the day is: {multi_model_obj.min_low_price}",
+        f"\t\tAverage Predicted Low point for the day is: {multi_model_obj.avg_low_price}",
+        f"\t\tAverage Predicted High point for the day is: {multi_model_obj.avg_high_price}",
+        f"\t\tMax Predicted High point for the day is: {multi_model_obj.max_high_price}",
+        f"Close price range for next trading day on '{ticker}' is: {multi_model_obj.min_close_predict} - {multi_model_obj.max_close_predict}\n\n",
+        f"Last close was: {last_close}\n\n",
+        f"Predictions are based on {loops} training loops:\n\n",
+        f"This means the model predicts a difference of {multi_model_obj.min_close_predict - last_close} - {multi_model_obj.max_close_predict - last_close}\n",
+        f"And a percentage change of {get_percent_error(ticker, multi_model_obj.min_close_predict)} - {get_percent_error(ticker, multi_model_obj.max_close_predict)}\n",
         "\n\n-------------------------------------------------------------------------------\n"
     ]
 
