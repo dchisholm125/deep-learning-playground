@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 # the goal of this file is just the loading the most up-to-date historical CSV file of an array of stocks for further analysis
+from matplotlib.dates import relativedelta
 import pandas as pd
+import pandas_ta as ta
 import numpy as np
 import requests 
 import yfinance as yf
@@ -23,11 +25,46 @@ class MultiModelPrediction:
         self.min_close_predict = min_close_predict
         self.max_close_predict = max_close_predict
 
+def train_single_model(ticker, years_back, target_feature):
+    df = get_df_of_lagged_hist(ticker, years_back)
+
+    model = RandomForestRegressor(random_state=1)
+
+    X_features = []
+    
+    for feature in df.columns:
+        if (feature == 'Price' or feature == target_feature):
+            continue
+        else:
+            X_features.append(feature)
+
+    y_features = [target_feature]
+
+    X = df[X_features]
+
+    y = df[y_features]
+
+    print('Model training started.')
+
+    model.fit(X[:-2], y[:-2])
+
+    print('Model training ended. Prediction starting.')
+
+    prediction = model.predict(X[-1:])
+
+    print('Model fit up to the SECOND to last row.')
+    print(f"Model was asked to make a prediction from the LAST row of information. This yielded one prediction for feature {target_feature}:")
+    print(prediction)
+    # return predicted was 0.03009617
+    # close was predicted as 605.65314331
+
+    return True
+
 ### model training ###
-def train_model(ticker, loops, csv_file_path = None):
+def train_multi_model(ticker, loops, csv_file_path = None):
     df_combined = get_model_ready_dataframe(ticker, csv_file_path)
 
-    print(f"From train_model() => using csv_file_path = {csv_file_path}")
+    print(f"From train_multi_model() => using csv_file_path = {csv_file_path}")
     print(df_combined)
 
     # build stock model and feature sets
@@ -122,7 +159,7 @@ def train_model(ticker, loops, csv_file_path = None):
     model = MultiModelPrediction(min(volume_predict_arr), max(volume_predict_arr), min(low_price_arr), np.mean(low_price_arr), 
                                   np.mean(high_price_arr), max(high_price_arr), min(close_predict_arr), max(close_predict_arr))       
 
-    print(f"From train_model() => model = {model}")
+    print(f"From train_multi_model() => model = {model}")
 
     return model
 
@@ -130,6 +167,10 @@ def train_model(ticker, loops, csv_file_path = None):
 ### Load CSV data helpers ###
 
 def load_csv_files(tickers):
+    """
+     A function that loads the yfinance CSV file of a provided stock ticker
+    """
+
     for ticker in tickers:
         load_data(ticker)
 
@@ -151,10 +192,106 @@ def load_data(ticker, csv_file_path = None):
         yf.download(tickers=ticker
                     , session=unsafe_session
                     ).to_csv(f'./csv/{ticker}_data.csv')
+        
+        now = datetime.now()
+        timestamp = now.strftime("%m-%d-%Y")
+
+        yf.download(tickers=ticker
+                    , session=unsafe_session
+                    ).to_csv(f'./modified-csv/{ticker}_asof_{timestamp}.csv')
 
         # load data into DataFrame
-        return pd.read_csv(f'./csv/{ticker}_data.csv')
+        return pd.read_csv(f'./modified-csv/{ticker}_asof_{timestamp}.csv')
+    
+### Pre-processing functions ###
 
+def add_features_to_CSVs(tickers):
+    """
+     For every ticker provided, create lagged features and add them to the modified-csv file to see the prepared data.
+    """
+    now = datetime.now()
+    timestamp = now.strftime("%m-%d-%Y")
+
+    for ticker in tickers:
+        df = load_data(ticker, f'./csv/{ticker}_data.csv')
+        df = df[2:]
+        print(df.head())
+
+        # convert all CSV columns to a numerics
+        df["Close"] = pd.to_numeric(df["Close"], errors="coerce")
+        df["High"] = pd.to_numeric(df["High"], errors="coerce")
+        df["Low"] = pd.to_numeric(df["Low"], errors="coerce")
+
+        # Compute technical indicators
+        df["SMA_50"] = ta.sma(df["Close"], length=50)
+        df["RSI"] = ta.rsi(df["Close"])
+        df["MACD"], df["MACD_Signal"], df["MACD_Hist"] = ta.macd(df["Close"]).T.values
+        df["ATR"] = ta.atr(df["High"], df["Low"], df["Close"])
+
+        # Calculate returns
+        df['Return'] = (df['Close'].pct_change()) * 100 # percentage change 
+        df.dropna()
+
+        # modify the CSV again
+        df.to_csv(f'./modified-csv/{ticker}_asof_{timestamp}.csv', index=False)
+
+def add_lagged_features_to_CSVs(tickers, horizon):
+    """
+    Add lagged features up to `horizon` days in the past, for every `ticker` in `tickers
+    """
+    now = datetime.now()
+    timestamp = now.strftime("%m-%d-%Y")
+
+    for ticker in tickers:
+        # load the data into a dataframe
+        df = load_data(ticker, f'./modified-csv/{ticker}_asof_{timestamp}.csv')
+
+        feature_list = df.columns[1:] # exclude the 'Price' column (which is really the 'Date' col anyway, but yfinance is weird)
+
+        print(feature_list)
+
+        for feature in feature_list:
+            for i in range(1, horizon + 1):
+                new_feat = f"{feature}_lag{i}"
+                df[new_feat] = df[feature].shift(i)
+
+        print('features lagged')
+
+        df.to_csv(f'./modified-csv/{ticker}_asof_{timestamp}.csv', index=False)
+
+        print(f'CSV modified for \'./modified-csv/{ticker}_asof_{timestamp}.csv\'')   
+
+def get_df_of_lagged_hist(ticker, years_back):
+    today = datetime.today()
+    today_timestamp = today.strftime("%m-%d-%Y")
+    x_yrs_ago = today - relativedelta(years=years_back)
+    x_yrs_string = x_yrs_ago.strftime("%Y-%m-%d")
+
+    # load the data into a dataframe
+    df = load_data(ticker, f'./modified-csv/{ticker}_asof_{today_timestamp}.csv')
+    
+    # if not exact, try going back by calculating the index
+    try:
+        # grab the INDEX of the row containing the string of the date we're looking for
+        index = df.loc[df['Price'] == x_yrs_string].index.tolist()[0]
+
+        # make the dataframe fit this window
+        df = df.loc[index:]
+
+        print(f"Exact date found, CSV modified to only include data back as far as {x_yrs_string}")
+    except:
+        # estimate the index
+        indices_back = years_back * ((52 * 5) - 8)
+        df = df.loc[-indices_back:]
+
+        print(f"No exact date found, estimating date instead.\n CSV modified to include {indices_back} rows")
+
+    # modify the CSV file AGAIN!
+    df.to_csv(f'./modified-csv/{ticker}_asof_{today_timestamp}.csv', index=False)
+
+    return df
+
+### END Pre-processing functions ###
 
 ### Model accuracy helpers ###
 
