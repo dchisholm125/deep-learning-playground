@@ -25,7 +25,8 @@ class MultiModelPrediction:
         self.min_close_predict = min_close_predict
         self.max_close_predict = max_close_predict
 
-def train_single_model(ticker, years_back, target_feature):
+### Model Training ###
+def train_single_model_and_predict(ticker, years_back, target_feature):
     df = get_df_of_lagged_hist(ticker, years_back)
 
     model = RandomForestRegressor(random_state=1)
@@ -58,9 +59,10 @@ def train_single_model(ticker, years_back, target_feature):
     # return predicted was 0.03009617
     # close was predicted as 605.65314331
 
-    return True
+    # prediction is over, and the {horizon}-day-prediction-csv folder already has a csv in it, let's change the value!
 
-### model training ###
+    return prediction
+
 def train_multi_model(ticker, loops, csv_file_path = None):
     df_combined = get_model_ready_dataframe(ticker, csv_file_path)
 
@@ -163,6 +165,42 @@ def train_multi_model(ticker, loops, csv_file_path = None):
 
     return model
 
+### CSV manipulators
+def replace_prediction_in_csv(ticker, horizon, prediction, feature):
+    now = datetime.now()
+    timestamp = now.strftime("%m-%d-%Y")
+
+    df = pd.read_csv(f"./{horizon}-day-prediction-csv/{ticker}_asof_{timestamp}.csv")
+
+    df.loc[len(df)-1, feature] = prediction
+
+    print(f"Replacing {feature} with {prediction} in \'./{horizon}-day-prediction-csv/{ticker}_asof_{timestamp}.csv\'")
+
+    # replace CSV with updated feature
+    df.to_csv(f"./{horizon}-day-prediction-csv/{ticker}_asof_{timestamp}.csv", index=False)
+
+    return True
+
+def add_new_csv_row(ticker, horizon):
+    now = datetime.now()
+    timestamp = now.strftime("%m-%d-%Y")
+
+    # see if df[0].Price == 1
+    df = pd.read_csv(f"./{horizon}-day-prediction-csv/{ticker}_asof_{timestamp}.csv")
+
+    if (df.loc[0].Price != 1):
+        print('Change row\'s \'Price\' column in \'./{horizon}-day-prediction-csv/{ticker}_asof_{timestamp}.csv\'')
+        df.loc[0, 'Price'] = 1
+    else:
+        # add a new row!
+        print(f'Adding a new row to \'./{horizon}-day-prediction-csv/{ticker}_asof_{timestamp}.csv\'')
+        df.loc[len(df)] = df.loc[len(df)-1]
+        # refer to last row now that a new one was created, and add 1 to it to show how many DAYS from the last known resulting data we are predicting
+        df.loc[len(df)-1, 'Price'] += 1
+
+    # replace the CSV
+    df.to_csv(f"./{horizon}-day-prediction-csv/{ticker}_asof_{timestamp}.csv", index=False)
+
 
 ### Load CSV data helpers ###
 
@@ -213,7 +251,7 @@ def add_features_to_CSVs(tickers):
     timestamp = now.strftime("%m-%d-%Y")
 
     for ticker in tickers:
-        df = load_data(ticker, f'./csv/{ticker}_data.csv')
+        df = load_data(ticker)
         df = df[2:]
         print(df.head())
 
@@ -234,6 +272,8 @@ def add_features_to_CSVs(tickers):
 
         # modify the CSV again
         df.to_csv(f'./modified-csv/{ticker}_asof_{timestamp}.csv', index=False)
+
+    return df.columns
 
 def add_lagged_features_to_CSVs(tickers, horizon):
     """
@@ -258,6 +298,9 @@ def add_lagged_features_to_CSVs(tickers, horizon):
         print('features lagged')
 
         df.to_csv(f'./modified-csv/{ticker}_asof_{timestamp}.csv', index=False)
+
+        # also create a prediction CSV at this time, from the final row
+        df[-1:].to_csv(f"./{horizon}-day-prediction-csv/{ticker}_asof_{timestamp}.csv", index=False)
 
         print(f'CSV modified for \'./modified-csv/{ticker}_asof_{timestamp}.csv\'')   
 
