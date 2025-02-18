@@ -24,7 +24,7 @@ def download_raw_stock_csv(ticker, timestamp):
 
         yf.download(tickers=ticker
                     , session=unsafe_session
-                    ).to_csv(f'../csv/{ticker}_data_{timestamp}.csv')
+                    ).to_csv(f'./csv/{ticker}_data_{timestamp}.csv')
         
         print(f'Raw stock data downloaded for {ticker} on {timestamp}.')
         
@@ -32,12 +32,12 @@ def create_csv_copy(ticker, timestamp, folder_name = 'modified-csv'):
         """
         Create a copy of an existing file containing raw stock data from yfinance. 
         """
-        raw_csv_path = f'../csv/{ticker}_data_{timestamp}.csv'
+        raw_csv_path = f'./csv/{ticker}_data_{timestamp}.csv'
 
         if(os.path.exists(raw_csv_path)):
             df = pd.read_csv(raw_csv_path)
 
-            df.to_csv(f'../{folder_name}/{ticker}_shared_{timestamp}.csv', index=False)
+            df.to_csv(f'./{folder_name}/{ticker}_shared_{timestamp}.csv', index=False)
         else:
             print(f'CSV doesn\'t exist for: \"{raw_csv_path}\"')
 
@@ -49,7 +49,7 @@ def reduce_copied_csv(ticker, timestamp, years_back, back_buffer_num = 50, folde
         x_yrs_ago = today - relativedelta(years=years_back)
         x_yrs_string = x_yrs_ago.strftime("%Y-%m-%d")
 
-        copied_csv_path = f'../{folder_name}/{ticker}_shared_{timestamp}.csv'
+        copied_csv_path = f'./{folder_name}/{ticker}_shared_{timestamp}.csv'
 
         if(os.path.exists(copied_csv_path)):
             # load the data into a dataframe
@@ -78,7 +78,7 @@ def calc_csv_technicals(ticker, timestamp, folder_name = 'modified-csv'):
     """
     Create technical indicators on copied CSV file.
     """
-    copied_csv_path = f'../{folder_name}/{ticker}_shared_{timestamp}.csv'
+    copied_csv_path = f'./{folder_name}/{ticker}_shared_{timestamp}.csv'
 
     df = pd.read_csv(copied_csv_path)
     df = df[2:]
@@ -106,7 +106,7 @@ def add_csv_lagged_features(ticker, timestamp, folder_name = 'modified-csv'):
     """
     Add lagged features up to `horizon` days in the past, for every `ticker` in `tickers
     """
-    copied_csv_path = f'../{folder_name}/{ticker}_shared_{timestamp}.csv'
+    copied_csv_path = f'./{folder_name}/{ticker}_shared_{timestamp}.csv'
 
     # load the data into a dataframe
     df = pd.read_csv(copied_csv_path)
@@ -125,7 +125,7 @@ def remove_buffered_rows(ticker, timestamp, back_buffer_num = 50, folder_name = 
     """
     Remove the first 50 or `back_buffer_num` rows from modified CSV file.
     """
-    copied_csv_path = f'../{folder_name}/{ticker}_shared_{timestamp}.csv'
+    copied_csv_path = f'./{folder_name}/{ticker}_shared_{timestamp}.csv'
 
     df = pd.read_csv(copied_csv_path)
 
@@ -135,17 +135,17 @@ def create_prediction_csv(ticker, timestamp, folder_name = 'modified-csv', horiz
     """
     Create a new prediction CSV for models to add predictions to.
     """
-    copied_csv_path = f'../{folder_name}/{ticker}_shared_{timestamp}.csv'
+    copied_csv_path = f'./{folder_name}/{ticker}_shared_{timestamp}.csv'
     prediction_folder = f'{horizon}-day-prediction-csv'
-    prediction_csv_path = f'../{prediction_folder}/{ticker}_{horizon}_day_prediction_{timestamp}.csv'
+    prediction_csv_path = f'./{prediction_folder}/{ticker}_{horizon}_day_prediction_{timestamp}.csv'
 
     df = pd.read_csv(copied_csv_path)
     df = df[-1:]
 
     # also create a prediction CSV at this time, from the final row
     # 1. check if folder exists, if not, create it:
-    if not os.path.exists(f"../{prediction_folder}"):
-        os.makedirs(f"../{prediction_folder}")
+    if not os.path.exists(f"./{prediction_folder}"):
+        os.makedirs(f"./{prediction_folder}")
 
     df.loc[-1:, 'Price'] = 0
 
@@ -184,7 +184,7 @@ def move_back_lagged_features(ticker, horizon, timestamp):
     """
     base_features = ['Close','High','Low','Open','Volume','Return','SMA_50','RSI','MACD','MACD_Signal','MACD_Hist','ATR']
     
-    prediction_csv_file_path = f"../{horizon}-day-prediction-csv/{ticker}_{horizon}_day_prediction_{timestamp}.csv"
+    prediction_csv_file_path = f"./{horizon}-day-prediction-csv/{ticker}_{horizon}_day_prediction_{timestamp}.csv"
 
     # first, move all "{feature}_lag1..29" to "{feature}_lag2..30"
     df_orig = pd.read_csv(prediction_csv_file_path)

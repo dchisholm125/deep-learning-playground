@@ -8,10 +8,11 @@ now = datetime.now()
 timestamp = now.strftime("%m-%d-%Y")
 horizon = 30
 ticker = 'SPY'
-
 base_features = ['Close','High','Low','Open','Volume','Return','SMA_50','RSI','MACD','MACD_Signal','MACD_Hist','ATR']
 
-predict.add_predictions_to_csv(ticker, timestamp, horizon, base_features)
+cp.generate_model_consumable_csvs('QQQ', timestamp, 14)
+
+# predict.add_predictions_to_csv(ticker, timestamp, horizon, base_features)
 
 # import os
 # import joblib
