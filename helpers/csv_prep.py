@@ -164,8 +164,47 @@ def copy_csv_last_row(file_path):
 
      df.to_csv(file_path, index=False)
 
+def copy_and_move_last_row(copy_file_path, dest_file_path):
+    df_copy = pd.read_csv(copy_file_path)
+    df_dest = pd.read_csv(dest_file_path)
+
+    df_dest.loc[len(df_dest)] = df_copy.loc[len(df_copy)-1]
+
+    df_dest.to_csv(dest_file_path, index=False)
+
+def move_back_lagged_features(ticker, horizon, timestamp):
+    """
+    Moves all lagged features from {feature}_lag1..29 >>> {feature}_lag2..30 in prediction CSV.
+    """
+    base_features = ['Close','High','Low','Open','Volume','Return','SMA_50','RSI','MACD','MACD_Signal','MACD_Hist','ATR']
+    
+    prediction_csv_file_path = f"../{horizon}-day-prediction-csv/{ticker}_{horizon}_day_prediction_{timestamp}.csv"
+
+    # first, move all "{feature}_lag1..29" to "{feature}_lag2..30"
+    df = pd.read_csv(prediction_csv_file_path)
+
+    df = df[len(df)-1:]
+
+    # for 
+    for feature in base_features:
+        for i in range(horizon-1, 0, -1):
+            older_field = f"{feature}_lag{i+1}"
+            newer_field = f"{feature}_lag{i}"
+            df[older_field] = df[newer_field]
+            print(f'Moved {newer_field} into {older_field}')
+
+            # second, move the current features to "{feature}_lag1"
+            if (i == 1):
+                df[newer_field] = df[feature]
+                df[feature] = 0
+                print(f'Moved {feature} into {newer_field}')
+
+    df.to_csv(prediction_csv_file_path, index = False)
+
 now = datetime.now()
 timestamp = now.strftime("%m-%d-%Y")
 
-generate_model_consumable_csvs('SPY', timestamp, 14)
-copy_csv_last_row('../30-day-prediction-csv/SPY_30_day_prediction_02-18-2025.csv')
+# generate_model_consumable_csvs('SPY', timestamp, 14)
+# copy_csv_last_row('../30-day-prediction-csv/SPY_30_day_prediction_02-18-2025.csv')
+# copy_and_move_last_row('../30-day-prediction-csv/SPY_30_day_prediction_02-18-2025.csv', '../modified-csv/SPY_shared_02-18-2025.csv')
+move_back_lagged_features('SPY', 30, timestamp)
