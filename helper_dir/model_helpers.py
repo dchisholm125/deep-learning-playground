@@ -14,7 +14,7 @@ from sklearn.model_selection import train_test_split
 from datetime import datetime
 
 def train_single_model(ticker, timestamp, target_feature):
-    if(os.path.exists(f"./models/{ticker}-model-{target_feature}-{timestamp}.joblib") and os.path.exists(f"./models/{ticker}-X-{target_feature}-{timestamp}.joblib")):
+    if(os.path.exists(f"./models/{ticker}-model-{target_feature}-{timestamp}.joblib")):
         print('Model found, DON\'T TRAIN!')
         return
 
@@ -42,8 +42,7 @@ def train_single_model(ticker, timestamp, target_feature):
     model.fit(X[:-2], y[:-2])
 
     joblib.dump(model, f'./models/{ticker}-model-{target_feature}-{timestamp}.joblib')
-    joblib.dump(X, f'./models/{ticker}-X-{target_feature}-{timestamp}.joblib')
 
     print(f'Model training ended for \'{target_feature}\'. Model and X saved to \'/models/\'')
 
-    return model, X
+    return model

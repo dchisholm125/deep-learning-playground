@@ -15,18 +15,37 @@ def generate_model_consumable_csvs(ticker, timestamp, years_back, horizon = 30, 
     remove_buffered_rows(ticker, timestamp, back_buffer_num, folder_name)
     create_prediction_csv(ticker, timestamp, folder_name, horizon)
 
-def download_raw_stock_csv(ticker, timestamp):
-        """
-        Download raw CSV from yfinance by ticker symbol.
-        """
-        unsafe_session = requests.session()
-        unsafe_session.verify = False
+def prep_new_predict_line(ticker, timestamp, horizon = 30):
+    """
+    Grab the appropriate '{horizon}-day-prediction-csv' file, copy the last row, and move the features back.
+    """
+    prediction_folder = f'{horizon}-day-prediction-csv'
+    prediction_csv_path = f'./{prediction_folder}/{ticker}_{horizon}_day_prediction_{timestamp}.csv'
 
-        yf.download(tickers=ticker
-                    , session=unsafe_session
-                    ).to_csv(f'./csv/{ticker}_data_{timestamp}.csv')
+    if(os.path.exists(prediction_csv_path)):
+        # do stuff
+        copy_csv_prediction_last_row(prediction_csv_path)
+        move_back_lagged_features(ticker, horizon, timestamp)
         
-        print(f'Raw stock data downloaded for {ticker} on {timestamp}.')
+    else:
+        print('Prediction CSV not found. Exiting program.')
+
+def download_raw_stock_csv(ticker, timestamp):
+    """
+    Download raw CSV from yfinance by ticker symbol.
+    """
+    if (os.path.exists(f'./csv/{ticker}_data_{timestamp}.csv')):
+        print(f'Raw stock data ALREADY downloaded for {ticker} on {timestamp}. No need to re-download')
+        return
+
+    unsafe_session = requests.session()
+    unsafe_session.verify = False
+
+    yf.download(tickers=ticker
+                , session=unsafe_session
+                ).to_csv(f'./csv/{ticker}_data_{timestamp}.csv')
+    
+    print(f'Raw stock data downloaded for {ticker} on {timestamp}.')
         
 def create_csv_copy(ticker, timestamp, folder_name = 'modified-csv'):
         """
@@ -43,7 +62,7 @@ def create_csv_copy(ticker, timestamp, folder_name = 'modified-csv'):
 
 def reduce_copied_csv(ticker, timestamp, years_back, back_buffer_num = 50, folder_name = 'modified-csv'):
         """
-        Reduce a CSV's stock data to window for models to consume
+        Reduce a CSV's stock data to a pre-defined window for models to consume.
         """
         today = datetime.today()
         x_yrs_ago = today - relativedelta(years=years_back)
@@ -61,18 +80,24 @@ def reduce_copied_csv(ticker, timestamp, years_back, back_buffer_num = 50, folde
                 index = df.loc[df['Price'] == x_yrs_string].index.tolist()[0]
                 # go back by buffer amount, which can be dynamic
                 index -= back_buffer_num
-                df = df.loc[index:]
 
                 print(f"Exact date found, CSV modified to only include data back as far as {x_yrs_string}")
+                
+                # modify the CSV file AGAIN!
+                df.loc[index:].to_csv(copied_csv_path, index=False)
             except:
                 # estimate the index and ADD buffer for backwards .loc[] lookup
                 indices_back = years_back * ((52 * 5) - 8) + back_buffer_num
-                df = df.loc[-indices_back:]
 
                 print(f"No exact date found, estimating date instead.\n CSV modified to include {indices_back} rows")
+                print(df.tail(indices_back).head())
+                print(df.tail(indices_back).tail())
 
-            # modify the CSV file AGAIN!
-            df.to_csv(copied_csv_path, index=False)
+                # modify the CSV file AGAIN!
+                df.tail(indices_back).to_csv(copied_csv_path, index=False)
+
+        else:
+            print("Issue loading CSV, cannot reduce copied CSV: {copied_csv_path}")
 
 def calc_csv_technicals(ticker, timestamp, folder_name = 'modified-csv'):
     """
@@ -153,20 +178,14 @@ def create_prediction_csv(ticker, timestamp, folder_name = 'modified-csv', horiz
 
     print(f'Prediction CSV generated: \'{prediction_csv_path}\'') 
 
-def copy_csv_last_row(file_path):
+def copy_csv_prediction_last_row(file_path):
      """
      Copies the last row of a CSV for further manipulation via a DataFrame.
      """
      df = pd.read_csv(file_path)
 
-     print('BEFORE!')
-     print(df)
-
      df.loc[len(df)] = df.loc[len(df)-1]
      df.loc[len(df)-1, 'Price'] += 1
-
-     print('AFTER!')
-     print(df)
 
      df.to_csv(file_path, index=False)
 
