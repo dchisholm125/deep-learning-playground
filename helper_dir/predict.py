@@ -3,7 +3,7 @@ import pandas as pd
 from helper_dir import model_helpers as mh
 from helper_dir import csv_prep as cp
 
-def make_prediction(ticker, timestamp, target_feature, base_features, csv_with_test_data):
+def make_prediction(ticker, timestamp, target_feature, csv_with_test_data):
     # load model
     model = joblib.load(f"./models/{ticker}-model-{target_feature}-{timestamp}.joblib")
 
@@ -37,7 +37,7 @@ def add_prediction_line_to_csv(ticker, timestamp, horizon, features, csv_with_te
 
     for feature in features:
         mh.train_single_model(ticker, timestamp, feature)
-        prediction = make_prediction(ticker, timestamp, feature, features, csv_with_test_data)
+        prediction = make_prediction(ticker, timestamp, feature, csv_with_test_data)
 
         print(f'BEFORE in-place change: {feature} = {df_copy[feature]}')
         # edit LAST lines in-place
@@ -46,7 +46,24 @@ def add_prediction_line_to_csv(ticker, timestamp, horizon, features, csv_with_te
 
     df_copy['Price'] += 1
 
+    # before adding predictions to the CSV which will be consumed AGAIN for prediction making, let's "normalize" the predictions
+    df_copy = normalize_predictions_by_return_perc(df_copy, df[-1:])
+
     pd.concat([df, df_copy]).to_csv(predict_file_path, index=False)
+
+def normalize_predictions_by_return_perc(df_copy, df_actual):
+    # 'Return' is the best predicted variable of the group of base features, let's noramlize based on this prediction
+    features = ['Close']
+
+    for feature in features:
+        # alter the df_copy feature based on yesterday's info
+        print(f'For {feature}')
+        print(f"df_actual[feature] ({df_actual[feature]}) * (1 + df_copy['Return']) ({(1 + df_copy['Return'])}) = {df_actual[feature] * (1 + (df_copy['Return'] / 100))}")
+        df_copy[feature] = df_actual[feature] * (1 + (df_copy['Return'] / 100))
+
+    df_copy['Open'] = df_actual['Close']
+
+    return df_copy
 
 def move_back_lagged_features_df(df, horizon):
     """
@@ -68,3 +85,29 @@ def move_back_lagged_features_df(df, horizon):
                 print(f'Moved {feature} into {newer_field}')
 
     return df
+
+def predict_from_X_mdays_ago(days_back, ticker, timestamp, target_feature, csv_with_test_data):
+     # load model
+    model = joblib.load(f"./models/{ticker}-model-{target_feature}-{timestamp}.joblib")
+
+    # load appropriate csv
+    df = pd.read_csv(csv_with_test_data)
+
+    # only look at row from days_back ago
+    df = df[-days_back-1:-days_back]
+    print(f'Price = {df.Price}')
+    df = df.drop('Price', axis=1)
+    days_back_close = df['Close'].iloc[0]
+    print(f"'Close' as of {days_back} = {days_back_close}")
+    df = df.drop(target_feature, axis=1)
+
+    # make a prediction based on the row of information
+    prediction = model.predict(df)
+
+    print(f"Model was asked to make a prediction from {days_back} days ago. This yielded one prediction for feature '{target_feature}' in ticker {ticker}:")
+    print(prediction[0])
+    print(f"This means we expect the price today to be: {(1 + prediction[0] / 100) * days_back_close}")
+
+    # prediction is over, and the {horizon}-day-prediction-csv folder already has a csv in it, let's change the value!
+
+    return prediction[0]

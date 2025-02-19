@@ -13,31 +13,35 @@ tickers = [
     # 'AMZN',
     # 'INTC',
     # 'MSFT',
-    # 'QQQ',
+    'QQQ',
     # 'SH',
     'SPY',
     # 'TEAM',
     # 'XYLD'
 ]
-ticker = 'SPY'
 base_features = ['Close','High','Low','Open','Volume','Return','SMA_50','RSI','MACD','MACD_Signal','MACD_Hist','ATR']
 
 for ticker in tickers:
-    cp.generate_model_consumable_csvs(ticker, timestamp, 14)
+    predict.predict_from_X_mdays_ago(30, ticker, timestamp, 'Return', f"./modified-csv/{ticker}_shared_{timestamp}.csv")
 
-    predict.add_prediction_line_to_csv(ticker, timestamp, horizon, base_features, "./modified-csv/SPY_shared_02-19-2025.csv")
-    for i in range(1, horizon):
-        predict.add_prediction_line_to_csv(ticker, timestamp, horizon, base_features, "./30-day-prediction-csv/SPY_30_day_prediction_02-19-2025.csv")
+# mh.test_model_accuracy('QQQ', 'Return', timestamp)
 
-    df = pd.read_csv('./30-day-prediction-csv/SPY_30_day_prediction_02-19-2025.csv')
+# for ticker in tickers:
+#     cp.generate_model_consumable_csvs(ticker, timestamp, 14)
 
-    total_30_day_return = 1
+#     predict.add_prediction_line_to_csv(ticker, timestamp, horizon, base_features, f"./modified-csv/{ticker}_shared_{timestamp}.csv")
+#     for i in range(1, horizon):
+#         predict.add_prediction_line_to_csv(ticker, timestamp, horizon, base_features, f"./{horizon}-day-prediction-csv/{ticker}_{horizon}_day_prediction_{timestamp}.csv")
 
-    for return_perc in df['Return']:
-        print(f"{return_perc} * total_30_day_return = ")
-        total_30_day_return += (return_perc / 100)
-        print(total_30_day_return)
+#     df = pd.read_csv(f'./{horizon}-day-prediction-csv/{ticker}_{horizon}_day_prediction_{timestamp}.csv')
 
-    return_str = f"Total Return over the next {horizon} days is predicted to be = {(total_30_day_return * 100) - 100}%"
+#     total_30_day_return = 1
 
-    add_line_to_file(f"./predict-files/{ticker}-{horizon}-day-prediction-results.txt", return_str)
+#     for return_perc in df['Return']:
+#         print(f"{return_perc} * total_30_day_return = ")
+#         total_30_day_return += (return_perc / 100)
+#         print(total_30_day_return)
+
+#     return_str = f"{timestamp} - Total Return over the next {horizon} days is predicted to be = {(total_30_day_return * 100) - 100}%"
+
+#     add_line_to_file(f"./predict-files/{ticker}-{horizon}-day-prediction-results.txt", return_str)
