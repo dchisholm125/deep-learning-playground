@@ -22,13 +22,15 @@ def train_single_model(ticker, timestamp, target_feature):
 
     df = pd.read_csv(f"./modified-csv/{ticker}_shared_{timestamp}.csv")
 
+    ignore_features = ['Price','Close','High','Low','Open','Volume','Return','SMA_50','RSI','MACD','MACD_Signal','MACD_Hist','ATR']
+
     model = RandomForestRegressor(random_state=1)
 
     X_features = []
     
     # remove {feature} from generating X_features so it's only in y_features
     for feature in df.columns:
-        if (feature == 'Price' or feature == target_feature):
+        if feature in ignore_features:
             continue
         else:
             X_features.append(feature)

@@ -4,6 +4,9 @@ from helper_dir import model_helpers as mh
 from helper_dir import csv_prep as cp
 
 def make_prediction(ticker, timestamp, target_feature, csv_with_test_data):
+    """
+    Make prediction based on existing model, CSV provided,
+    """
     # load model
     model = joblib.load(f"./models/{ticker}-model-{target_feature}-{timestamp}.joblib")
 
@@ -13,8 +16,20 @@ def make_prediction(ticker, timestamp, target_feature, csv_with_test_data):
     # only look at last row
     df = df[-1:]
     print(f'Price = {df.Price}')
-    df = df.drop('Price', axis=1)
-    df = df.drop(target_feature, axis=1)
+    ignore_features = ['Price','Close','High','Low','Open','Volume','Return','SMA_50','RSI','MACD','MACD_Signal','MACD_Hist','ATR']
+
+    df_columns = []
+
+    for feature in df.columns:
+        if feature in ignore_features:
+            continue
+        else:
+            df_columns.append(feature)
+
+    print('Columns are:')
+    print(df_columns)
+
+    df = df[df_columns]
 
     # make a prediction based on the row of information
     prediction = model.predict(df)
@@ -50,6 +65,33 @@ def add_prediction_line_to_csv(ticker, timestamp, horizon, features, csv_with_te
     df_copy = normalize_predictions_by_return_perc(df_copy, df[-1:])
 
     pd.concat([df, df_copy]).to_csv(predict_file_path, index=False)
+
+def backdated_prediction_line_add(days_back, ticker, timestamp, horizon, features, csv_with_test_data):
+
+    data_file_path = f"./backdate-tests/{ticker}-{days_back}-backdate_test.csv"
+
+    df = pd.read_csv(data_file_path)
+
+    # read in the last line for making a prediction
+    df_copy = df[-1:].copy()
+
+    df_copy = move_back_lagged_features_df(df_copy, horizon)
+
+    for feature in features:
+        # DON'T train the model here, this should only be run on existing models for accuracy purposes / as a datapoint for making decisions
+        prediction = make_prediction(ticker, timestamp, feature, csv_with_test_data)
+
+        print(f'BEFORE in-place change: {feature} = {df_copy[feature]}')
+        # edit LAST lines in-place
+        df_copy[feature] = prediction
+        print(f'AFTER in-place change: {feature} = {df_copy[feature]}')
+
+    df_copy['Price'] = 1
+
+    # before adding predictions to the CSV which will be consumed AGAIN for prediction making, let's "normalize" the predictions
+    df_copy = normalize_predictions_by_return_perc(df_copy, df[-1:])
+
+    pd.concat([df, df_copy]).to_csv(data_file_path, index=False)
 
 def normalize_predictions_by_return_perc(df_copy, df_actual):
     # 'Return' is the best predicted variable of the group of base features, let's noramlize based on this prediction
